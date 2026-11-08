@@ -1,0 +1,56 @@
+{
+  "expo": {
+    "name": "课序",
+    "slug": "classboard",
+    "version": "1.4.0",
+    "orientation": "portrait",
+    "scheme": "classboard",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "top.classboard.app",
+      "buildNumber": "1",
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "NSLocalNetworkUsageDescription": "用于在同一 Wi-Fi 下与电脑互传课表",
+        "NSBonjourServices": [
+          "_classboard._tcp",
+          "_classboard-ios._tcp"
+        ],
+        "NSSupportsLiveActivities": true,
+        "NSSupportsLiveActivitiesFrequentUpdates": true
+      }
+    },
+    "android": {
+      "package": "top.classboard.app"
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "16.4"
+          }
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#6B8A78"
+        }
+      ],
+      "expo-document-picker",
+      "expo-router",
+      "expo-live-activity",
+      "expo-font"
+    ],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}
