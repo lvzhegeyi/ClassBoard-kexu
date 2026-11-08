@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -33,6 +33,7 @@ export function SectionTimesScreen() {
   const [picker, setPicker] = useState<PickerTarget>(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
 
   const invalidIndexes = useMemo(() => {
     const invalid = new Set<number>();
@@ -60,12 +61,14 @@ export function SectionTimesScreen() {
   }, []);
 
   const save = useCallback(async () => {
-    if (saving) return;
+    // 连点保护：setState 异步，两次点击可能同时进入
+    if (savingRef.current) return;
     const bad = sections.find((section) => minutesOf(section.end) <= minutesOf(section.start));
     if (bad) {
       setError(`第 ${bad.index} 节的结束时间必须晚于开始时间`);
       return;
     }
+    savingRef.current = true;
     setSaving(true);
     setError('');
     try {
@@ -78,10 +81,11 @@ export function SectionTimesScreen() {
       router.back();
     } catch (err: any) {
       setError(err?.message || '保存失败，请重试');
+      savingRef.current = false;
     } finally {
       setSaving(false);
     }
-  }, [router, saving, sections, updateSections]);
+  }, [router, sections, updateSections]);
 
   return (
     <AppScreen edges={['top']}>

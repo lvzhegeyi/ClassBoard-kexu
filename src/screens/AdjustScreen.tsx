@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -115,6 +115,8 @@ export function AdjustScreen() {
   const [calField, setCalField] = useState<CalField | null>(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const submitting = useRef(false);
+  const removingRef = useRef(false);
 
   const adjustments = state.adjustments;
   const typeIndex = TYPE_VALUES.indexOf(draft.type);
@@ -157,7 +159,10 @@ export function AdjustScreen() {
   }, [calField]);
 
   const submit = useCallback(async () => {
-    if (saving) return;
+    // setState 是异步的，双击瞬间两次 onPress 会同时通过 saving 检查；
+    // 用 ref 同步加锁，避免连点重复添加同一条调休。
+    if (submitting.current) return;
+    submitting.current = true;
     setError('');
     setSaving(true);
     try {
@@ -195,15 +200,20 @@ export function AdjustScreen() {
     } catch (err: any) {
       setError(err?.message || '添加失败，请重试');
     } finally {
+      submitting.current = false;
       setSaving(false);
     }
-  }, [addAdjustment, draft, saving]);
+  }, [addAdjustment, draft]);
 
   const remove = useCallback(async (index: number) => {
+    if (removingRef.current) return;
+    removingRef.current = true;
     try {
       await removeAdjustment(index);
     } catch (err: any) {
       // 删除失败时保持列表原样即可，无需打断用户
+    } finally {
+      removingRef.current = false;
     }
   }, [removeAdjustment]);
 

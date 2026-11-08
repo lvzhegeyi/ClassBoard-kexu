@@ -200,6 +200,8 @@ export function CourseEditScreen() {
   const [deleteVisible, setDeleteVisible] = useState(false);
   const [categoryVisible, setCategoryVisible] = useState(false);
   const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
+  const savingRef = useRef(false);
+  const deletingRef = useRef(false);
 
   const resolvedColor = draft.colorManual
     ? draft.color
@@ -259,7 +261,6 @@ export function CourseEditScreen() {
   }, [patchSlot, weekMax]);
 
   const save = useCallback(async () => {
-    if (saving) return;
     const name = draft.name.trim();
     if (!name) {
       setError('请先填写课程名');
@@ -277,6 +278,9 @@ export function CourseEditScreen() {
         return;
       }
     }
+    // 同步加锁：避免连点保存触发两次写入/两次 router.back()
+    if (savingRef.current) return;
+    savingRef.current = true;
     const creditRaw = creditText.trim() === '' ? null : Number(creditText);
     const credit = creditRaw != null && Number.isFinite(creditRaw) ? creditRaw : null;
     const cleaned: Course = {
@@ -304,18 +308,21 @@ export function CourseEditScreen() {
     } catch (err: any) {
       setError(err?.message || '保存失败，请重试');
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
-  }, [creditText, draft, maxSection, resolvedColor, router, saving, upsertCourse]);
+  }, [creditText, draft, maxSection, resolvedColor, router, upsertCourse]);
 
   const removeCourse = useCallback(async () => {
-    if (!courseId) return;
+    if (!courseId || deletingRef.current) return;
+    deletingRef.current = true;
     setDeleteVisible(false);
     try {
       await deleteCourse(courseId);
       router.back();
     } catch (err: any) {
       setError(err?.message || '删除失败，请重试');
+      deletingRef.current = false;
     }
   }, [courseId, deleteCourse, router]);
 
