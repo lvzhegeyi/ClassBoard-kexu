@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
@@ -63,5 +63,6 @@ jobs:
           name: ClassBoard-unsigned-ipa
           path: ClassBoard-unsigned.ipa
           if-no-files-found: error
+
 
 
